@@ -7,11 +7,37 @@ dotenv.config();
 connectDB();
 
 const app = express();
-app.use(cors({
-  origin: 'https://waterpurifier-six.vercel.app', 
-  credentials: true
-}));
+const corsOptions = {
+  origin: [
+    'https://waterpurifier-six.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:3001'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token', 'Origin', 'Accept'],
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
+
+app.options('*', cors(corsOptions));
+
+// Additional CORS headers middleware
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'https://waterpurifier-six.vercel.app');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, x-auth-token');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
+
 
 app.use("/api/admin", require("./routes/adminRoutes"));
 app.use("/api/products", require("./routes/productRoutes"));
